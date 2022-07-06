@@ -5,7 +5,7 @@ import { Observable, of } from 'rxjs';
 import IUser from '../models/user.model';
 import { delay, map, filter, switchMap } from 'rxjs/operators'
 import { Router } from '@angular/router';
-import { ActivatedRoute, NavigationEnd } from '@angular/router'
+import { ActivatedRoute, NavigationEnd } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +15,7 @@ export class AuthService {
   public isAuthenticated$: Observable<boolean>
   public isAuthenticatedWithDelay$: Observable<boolean>
   private redirect = false
+
   constructor(
     private auth: AngularFireAuth,
     private db: AngularFirestore,
@@ -29,11 +30,12 @@ export class AuthService {
       delay(1000)
     )
     this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      map(event => this.route.firstChild),
-      switchMap(route => route?.data ?? of ({}))
-    ).
-    subscribe(data => this.redirect = data.authOnly ?? false)
+      filter(e => e instanceof NavigationEnd),
+      map(e => this.route.firstChild),
+      switchMap(route => route?.data ?? of({}))
+    ).subscribe(data => {
+      this.redirect = data.authOnly ?? false
+    })
   }
   
   public async createUser(userData: IUser) {
@@ -60,17 +62,16 @@ export class AuthService {
       displayName: userData.name
     })
   }
-  public async logout($event?: Event) {
 
-    if ($event){
+  public async logout($event?: Event) {
+    if($event) {
       $event.preventDefault()
     }
 
-
     await this.auth.signOut()
-    if (this.redirect){
+
+    if(this.redirect) {
       await this.router.navigateByUrl('/')
     }
-   
   }
 }
